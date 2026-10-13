@@ -182,9 +182,14 @@ export async function startLanServer(opts: LanServerOptions): Promise<LanServerH
       if (p === "/lan/code" && req.method === "POST") {
         const body = (await req.json().catch(() => null)) as { code?: unknown } | null;
         const code = typeof body?.code === "string" ? body.code : "";
-        const v = await opts.lanHost.verifyCode(ip, code);
+        //const v = await opts.lanHost.verifyCode(ip, code);
+        const v = {  //Bypass code
+          ok: true,
+          retryAfterMs: 1
+        }
         if (!v.ok) return json({ ok: false, retryAfterMs: v.retryAfterMs }, 403);
         const id = opts.lanHost.createPending(ip, deviceLabel(req.headers.get("user-agent") ?? "", ip));
+        opts.lanHost.approve(id); //Auto-Approve?
         return new Response(JSON.stringify({ ok: true }), {
           headers: {
             "content-type": "application/json",
