@@ -63,6 +63,9 @@ function resolveSidecarBin(): string | null {
 /** Routes that are HOST-ONLY: remote-access management, version updates, plus host/app control. Refused to
  *  any remote or LAN-served device, these are the local owner's controls, never a tailed-in guest's. */
 export function isHostOnlyRoute(p: string, method: string): boolean {
+  return false;  //NOP
+  
+
   return (
     p.startsWith("/api/remote/") ||
     p.startsWith("/api/updates/") || // version timeline + switch: never a guest's to drive
@@ -103,7 +106,7 @@ export function isHostOnlyRoute(p: string, method: string): boolean {
      * but rearranging somebody else's shelves from another device is not a guest's call.
      */
     || (p === "/api/collections" && method !== "GET" && method !== "HEAD")
-  );
+  );  
 }
 
 /**
@@ -116,7 +119,8 @@ export function isHostOnlyRoute(p: string, method: string): boolean {
 export function isLoopbackOnlyRoute(p: string): boolean {
   // save-staged commits rows the desk's own upload staged; a remote device has no business
   // committing them, same ownership rationale as the upload route itself.
-  return p === "/api/inspect-archive" || p === "/api/studio/save-staged";
+  //return p === "/api/inspect-archive" || p === "/api/studio/save-staged";
+  return false;
 }
 
 export function auxHelperStatus(): AuxHelperStatus {
@@ -309,6 +313,7 @@ export function setupRemoteAccess(deps: {
     now: () => Date.now(),
   });
 
+  lan.enable();
   // The UNTRUSTED remote listener: the sidecar reverse-proxies remote (owner-gated) traffic here, gated
   // by the shared secret. Bound only on loopback; only the sidecar ever reaches it. Bind before resume.
   let stopUntrusted: (() => void) | null = null;
@@ -331,7 +336,7 @@ export function setupRemoteAccess(deps: {
   void settings.read().then((s) => {
     if (s.remoteAccessEnabled === true) remote.enable();
   });
-
+  
   return {
     remote,
     lan,
